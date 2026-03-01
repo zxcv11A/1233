@@ -123,9 +123,16 @@
 
             <h2 class="text-2xl font-bold" id="status-text">พร้อมฟังหรือยัง?</h2>
             
-            <button id="play-btn" onclick="playAudio(false)" class="w-32 h-32 rounded-full bg-white text-tiktok-dark text-4xl shadow-[0_0_30px_rgba(255,255,255,0.3)] hover:scale-110 transition-transform mx-auto flex items-center justify-center relative z-10">
-                <i class="fa-solid fa-play ml-2" id="play-icon"></i>
-            </button>
+            <div class="flex justify-center items-center gap-4 relative z-10 transition-all duration-300">
+                <button id="play-btn" onclick="playAudio(false)" class="w-32 h-32 rounded-full bg-white text-tiktok-dark text-4xl shadow-[0_0_30px_rgba(255,255,255,0.3)] hover:scale-110 transition-transform flex items-center justify-center">
+                    <i class="fa-solid fa-play ml-2" id="play-icon"></i>
+                </button>
+                
+                <!-- ปุ่มหยุดเพลงจะโผล่มาเฉพาะตอนเพลงเล่น -->
+                <button id="stop-btn" onclick="stopAudioBtn()" class="w-16 h-16 rounded-full bg-tiktok-pink text-white text-2xl shadow-[0_0_15px_rgba(254,9,121,0.6)] hover:scale-110 transition-transform hidden items-center justify-center" title="หยุดเพลง">
+                    <i class="fa-solid fa-stop"></i>
+                </button>
+            </div>
             
             <div class="space-y-2 relative z-10">
                 <p class="text-sm text-gray-400" id="timer-text">กดปุ่มกลมเพื่อฟังท่อนฮุค (5 วินาที)</p>
@@ -194,7 +201,7 @@
         <div class="glass-panel p-8 rounded-3xl space-y-2">
             <p class="text-gray-400">คะแนนของคุณ</p>
             <p class="text-6xl font-bold text-white"><span id="final-score">0</span><span id="final-total" class="text-2xl text-gray-500">/20</span></p>
-            <p class="text-tiktok-cyan pt-4 font-medium" id="final-message">เยี่ยมมาก</p>
+            <p class="text-tiktok-cyan pt-4 font-medium" id="final-message">เก่งเเนาะ</p>
         </div>
 
         <div class="space-y-4">
@@ -208,82 +215,91 @@
         // ใส่ URL ของ Google Apps Script ที่ได้จากขั้นตอนด้านล่างตรงนี้
         const GOOGLE_SHEET_URL = "https://script.google.com/macros/s/AKfycbxTcRcUBPg5UOqxdZg7dG81SNo-KvyV2DwiKHetCjM5RqRdTwKn-b66ymukr_KKcMHT8A/exec";
 
-        // ฐานข้อมูลเพลงใหม่ทั้งหมดตามที่ระบุ
+        // ฐานข้อมูลเพลงใหม่ทั้งหมดพร้อมชื่อศิลปิน/วงที่ถูกต้อง
         const songDatabase = [
-            { query: "ผู้ถูกเลือกให้ผิดหวัง เรนิษรา", name: "ผู้ถูกเลือกให้ผิดหวัง", answers: ["ผู้ถูกเลือกให้ผิดหวัง", "sad tur day"] },
-            { query: "ดีใจที่ได้พบเธอ", name: "ดีใจที่ได้พบเธอ", answers: ["ดีใจที่ได้พบเธอ"] },
-            { query: "พัทยา MEYOU", name: "พัทยา (Pattaya)", answers: ["พัทยา", "pattaya"] },
-            { query: "ซอยข่อยแน", name: "ซอยข่อยแน", answers: ["ซอยข่อยแน"] },
-            { query: "สมดุลรัก", name: "สมดุลรัก", answers: ["สมดุลรัก"] },
-            { query: "ใจฉันตามเธอไป", name: "ใจฉันตามเธอไป", answers: ["ใจฉันตามเธอไป"] },
-            { query: "คนสวย", name: "คนสวย", answers: ["คนสวย"] },
-            { query: "Baby Tee BOWKYLION", name: "Baby Tee", answers: ["baby tee", "เบบี้ที"] },
-            { query: "ที่คั้นหนังสือ", name: "ที่คั้นหนังสือ", answers: ["ที่คั้นหนังสือ"] },
-            { query: "เข้าตา Ozeeoos", name: "เข้าตา", answers: ["เข้าตา"] },
-            { query: "พัก jay Q", name: "พัก", answers: ["พัก"] },
-            { query: "บักหำน้อย", name: "บักหำน้อย", answers: ["บักหำน้อย"] },
-            { query: "เพลินฤดี", name: "เพลินฤดี", answers: ["เพลินฤดี"] },
-            { query: "เจิดจรัส", name: "เจิดจรัส", answers: ["เจิดจรัส"] },
-            { query: "Benz ดำ", name: "Benz ดำ", answers: ["benz ดำ", "เบนซ์ดำ"] },
-            { query: "นครดารา", name: "นครดารา", answers: ["นครดารา"] },
-            { query: "อยากจะกอดเธอนานๆ", name: "อยากจะกอดเธอนาน ๆ", answers: ["อยากจะกอดเธอนานๆ", "อยากจะกอดเธอนานนาน"] },
-            { query: "ฉบับปรับปรุง", name: "ฉบับปรับปรุง", answers: ["ฉบับปรับปรุง"] },
-            { query: "วายร้าย UrboyTJ", name: "วายร้าย", answers: ["วายร้าย"] },
-            { query: "เฉยเมย YOUNGOHM", name: "เฉยเมย", answers: ["เฉยเมย"] },
-            { query: "ส่วนต่าง BOWKYLION", name: "ส่วนต่าง", answers: ["ส่วนต่าง"] },
-            { query: "ทิ้งไป", name: "ทิ้งไป", answers: ["ทิ้งไป"] },
-            { query: "ยอมอยู่แล้ว", name: "ยอมอยู่แล้ว", answers: ["ยอมอยู่แล้ว"] },
-            { query: "จดจำ", name: "จดจำ", answers: ["จดจำ"] },
-            { query: "เพลงที่เธอไม่ฟัง", name: "เพลงที่เธอไม่ฟัง", answers: ["เพลงที่เธอไม่ฟัง"] },
-            { query: "บรรยากาศ", name: "บรรยากาศ", answers: ["บรรยากาศ"] },
-            { query: "ท้ายปี", name: "ท้ายปี", answers: ["ท้ายปี"] },
-            { query: "ฝนตกไหม Three Man Down", name: "ฝนตกไหม", answers: ["ฝนตกไหม"] },
-            { query: "เปิดตัวเขา", name: "เปิดตัวเขา", answers: ["เปิดตัวเขา"] },
-            { query: "ถ้าเธอรักฉันจริง", name: "ถ้าเธอรักฉันจริง", answers: ["ถ้าเธอรักฉันจริง"] },
-            { query: "ข้างกัน Three Man Down", name: "ข้างกัน", answers: ["ข้างกัน"] },
-            { query: "ปล่อยให้เวลา", name: "ปล่อยให้เวลา", answers: ["ปล่อยให้เวลา"] },
-            { query: "วันเกิดฉันปีนี้", name: "วันเกิดฉันปีนี้", answers: ["วันเกิดฉันปีนี้"] },
-            { query: "ลาลาลอย", name: "ลาลาลอย", answers: ["ลาลาลอย", "100%"] },
-            { query: "หน้าหนาวที่แล้ว The Toys", name: "หน้าหนาวที่แล้ว", answers: ["หน้าหนาวที่แล้ว"] },
-            { query: "จดหมาย The Toys", name: "จดหมาย", answers: ["จดหมาย"] },
-            { query: "จำนน", name: "จำนน", answers: ["จำนน"] },
-            { query: "รักแรก NONT TANONT", name: "รักแรก", answers: ["รักแรก"] },
-            { query: "ดอกไม้ที่รอฝน", name: "ดอกไม้ที่รอฝน", answers: ["ดอกไม้ที่รอฝน"] },
-            { query: "ลืมไปแล้วว่าลืมยังไง", name: "ลืมไปแล้วว่าลืมยังไง", answers: ["ลืมไปแล้วว่าลืมยังไง"] },
-            { query: "แค่เธอ", name: "แค่เธอ", answers: ["แค่เธอ"] },
-            { query: "ปีใหม่ปีนี้", name: "ปีใหม่ปีนี้", answers: ["ปีใหม่ปีนี้"] },
-            { query: "ขี้หึง", name: "ขี้หึง", answers: ["ขี้หึง"] },
-            { query: "9 นาฬิกา", name: "9 นาฬิกา", answers: ["9 นาฬิกา", "เก้านาฬิกา"] },
-            { query: "เค้าก่อน UrboyTJ", name: "เค้าก่อน", answers: ["เค้าก่อน"] },
-            { query: "เป็นให้ทุกอย่าง", name: "เป็นให้ทุกอย่าง", answers: ["เป็นให้ทุกอย่าง"] },
-            { query: "ถามคำ", name: "ถามคำ", answers: ["ถามคำ"] },
-            { query: "ช่วยไม่ได้", name: "ช่วยไม่ได้", answers: ["ช่วยไม่ได้"] },
-            { query: "ความรักนักบินอวกาศ", name: "ความรักนักบินอวกาศ", answers: ["ความรักนักบินอวกาศ"] },
-            { query: "ฝากดาว", name: "ฝากดาว", answers: ["ฝากดาว"] },
-            { query: "หน้าสุดท้ายของปฏิทิน", name: "หน้าสุดท้ายของปฏิทิน", answers: ["หน้าสุดท้ายของปฏิทิน"] },
-            { query: "เมื่อคืนฉันฝันว่า", name: "เมื่อคืนฉันฝันว่า", answers: ["เมื่อคืนฉันฝันว่า"] },
-            { query: "ในวันที่ฝนพรำ", name: "ในวันที่ฝนพรำ", answers: ["ในวันที่ฝนพรำ"] },
-            { query: "แค่คุย", name: "แค่คุย", answers: ["แค่คุย"] },
-            { query: "ฟาวเวอร์", name: "ฟาวเวอร์ (Flower)", answers: ["ฟาวเวอร์", "flower", "ดอกไม้"] },
-            { query: "จุ๊บก่อนนอน", name: "จุ๊บก่อนนอน", answers: ["จุ๊บก่อนนอน"] },
-            { query: "รักเธอหัวทิ่มบ่อ", name: "รักเธอหัวทิ่มบ่อ", answers: ["รักเธอหัวทิ่มบ่อ"] },
-            { query: "คนมีเสน่ห์ ป้าง", name: "คนมีเสน่ห์", answers: ["คนมีเสน่ห์"] },
-            { query: "วัดปะหล่ะ", name: "วัดปะหล่ะ", answers: ["วัดปะหล่ะ", "วัดปะละ"] },
-            { query: "จีบเธอไม่ได้", name: "จีบเธอไม่ได้", answers: ["จีบเธอไม่ได้"] },
-            { query: "ฉบับสุดท้าย", name: "ฉบับสุดท้าย", answers: ["ฉบับสุดท้าย"] },
-            { query: "ความต่าง", name: "ความต่าง", answers: ["ความต่าง"] },
-            { query: "ไอ้ต้าว", name: "ไอ้ต้าว", answers: ["ไอ้ต้าว"] },
-            { query: "บังอร", name: "บังอร", answers: ["บังอร"] },
-            { query: "นางฟ้าจำแลง", name: "นางฟ้าจำแลง", answers: ["นางฟ้าจำแลง"] },
-            { query: "กฏไตรรัก", name: "กฏไตรรัก", answers: ["กฏไตรรัก", "กฎไตรรัก"] },
-            { query: "ตราบธุรีดิน", name: "ตราบธุรีดิน", answers: ["ตราบธุรีดิน", "ตราบธุลีดิน"] },
-            { query: "โอ้ละน้อ ก้องห้วยไร่", name: "โอ้ละน้อ", answers: ["โอ้ละน้อ", "โอ้ละน้อก้องห้วยไร่"] },
-            { query: "ไสว่าสิบ่ถิ่มกัน", name: "ไสว่าสิบ่ถิ่มกัน", answers: ["ไสว่าสิบ่ถิ่มกัน", "ใสว่าสิบ่ถิ่มกัน"] },
-            { query: "ริมหาดทราย", name: "ริมหาดทราย", answers: ["ริมหาดทราย"] },
-            { query: "ไทม์แมชชีน", name: "ไทม์แมชชีน", answers: ["ไทม์แมชชีน", "time machine", "ไทมืแมชชีน"] },
-            { query: "มีเพลงจะร้องให้ฟัง", name: "มีเพลงจะร้องให้ฟัง", answers: ["มีเพลงจะร้องให้ฟัง"] },
-            { query: "ที่ระทึก", name: "ที่ระทึก", answers: ["ที่ระทึก"] },
-            { query: "เตือนแล้วนะ", name: "เตือนแล้วนะ", answers: ["เตือนแล้วนะ"] }
+            { query: "ผู้ถูกเลือกให้ผิดหวัง เรนิษรา", name: "ผู้ถูกเลือกให้ผิดหวัง (เรนิษรา)", answers: ["ผู้ถูกเลือกให้ผิดหวัง", "sad tur day"] },
+            { query: "ดีใจที่ได้พบเธอ liltan", name: "ดีใจที่ได้พบเธอ (liltan)", answers: ["ดีใจที่ได้พบเธอ"] },
+            { query: "พัทยา MEYOU", name: "พัทยา (MEYOU)", answers: ["พัทยา", "pattaya"] },
+            { query: "ซอยข่อยแน แจ๋ม", name: "ซอยข่อยแน (แจ๋ม พลอยไพลิน)", answers: ["ซอยข่อยแน"] },
+            { query: "สมดุลรัก SEA.", name: "สมดุลรัก (SEA.)", answers: ["สมดุลรัก"] },
+            { query: "ใจฉันตามเธอไป YOUNGOHM", name: "ใจฉันตามเธอไป (YOUNGOHM)", answers: ["ใจฉันตามเธอไป"] },
+            { query: "คนสวย BETAYOURBITCH", name: "คนสวย (BETAYOURBITCH)", answers: ["คนสวย"] },
+            { query: "Baby Tee GALCHANIE", name: "Baby Tee (GALCHANIE)", answers: ["baby tee", "เบบี้ที"] },
+            { query: "ที่คั้นหนังสือ BOWKYLION", name: "ที่คั้นหนังสือ (BOWKYLION)", answers: ["ที่คั้นหนังสือ"] },
+            { query: "เข้าตา AOFZ", name: "เข้าตา (AOFZ)", answers: ["เข้าตา"] },
+            { query: "พัก JayQ", name: "พัก (JayQ)", answers: ["พัก"] },
+            { query: "บักหำน้อย BA3Y $KRRT", name: "บักหำน้อย (BA3Y $KRRT)", answers: ["บักหำน้อย"] },
+            { query: "เพลินฤดี ปู่จ๋าน ลองไมค์", name: "เพลินฤดี (ปู่จ๋าน ลองไมค์)", answers: ["เพลินฤดี"] },
+            { query: "เจิดจรัส YOUNGOHM", name: "เจิดจรัส (YOUNGOHM)", answers: ["เจิดจรัส"] },
+            { query: "Benz ดำ YOUNGOHM", name: "Benz ดำ (YOUNGOHM)", answers: ["benz ดำ", "เบนซ์ดำ"] },
+            { query: "นครดารา YOUNGOHM", name: "นครดารา (YOUNGOHM)", answers: ["นครดารา"] },
+            { query: "อยากจะกอดเธอนานๆ BLVCKHEART", name: "อยากจะกอดเธอนาน ๆ (BLVCKHEART)", answers: ["อยากจะกอดเธอนานๆ", "อยากจะกอดเธอนานนาน"] },
+            { query: "ฉบับปรับปรุง ZENTYARB", name: "ฉบับปรับปรุง (ZENTYARB)", answers: ["ฉบับปรับปรุง"] },
+            { query: "วายร้าย UrboyTJ", name: "วายร้าย (UrboyTJ)", answers: ["วายร้าย"] },
+            { query: "เฉยเมย YOUNGOHM", name: "เฉยเมย (YOUNGOHM)", answers: ["เฉยเมย"] },
+            { query: "ส่วนต่าง BOWKYLION", name: "ส่วนต่าง (BOWKYLION)", answers: ["ส่วนต่าง"] },
+            { query: "ทิ้งไป Only Monday", name: "ทิ้งไป (Only Monday)", answers: ["ทิ้งไป"] },
+            { query: "ยอมอยู่แล้ว Only Monday", name: "ยอมอยู่แล้ว (Only Monday)", answers: ["ยอมอยู่แล้ว"] },
+            { query: "จดจำ Only Monday", name: "จดจำ (Only Monday)", answers: ["จดจำ"] },
+            { query: "เพลงที่เธอไม่ฟัง Bedroom Audio", name: "เพลงที่เธอไม่ฟัง (Bedroom Audio)", answers: ["เพลงที่เธอไม่ฟัง"] },
+            { query: "บรรยากาศ Only Monday", name: "บรรยากาศ (Only Monday)", answers: ["บรรยากาศ"] },
+            { query: "ท้ายปี Only Monday", name: "ท้ายปี (Only Monday)", answers: ["ท้ายปี"] },
+            { query: "ฝนตกไหม Three Man Down", name: "ฝนตกไหม (Three Man Down)", answers: ["ฝนตกไหม"] },
+            { query: "เปิดตัวเขา Three Man Down", name: "เปิดตัวเขา (Three Man Down)", answers: ["เปิดตัวเขา"] },
+            { query: "ถ้าเธอรักฉันจริง Three Man Down", name: "ถ้าเธอรักฉันจริง (Three Man Down)", answers: ["ถ้าเธอรักฉันจริง"] },
+            { query: "ข้างกัน Three Man Down", name: "ข้างกัน (Three Man Down)", answers: ["ข้างกัน"] },
+            { query: "ปล่อยให้เวลา Three Man Down", name: "ปล่อยให้เวลา (Three Man Down)", answers: ["ปล่อยให้เวลา"] },
+            { query: "วันเกิดฉันปีนี้ Three Man Down", name: "วันเกิดฉันปีนี้ (Three Man Down)", answers: ["วันเกิดฉันปีนี้"] },
+            { query: "ลาลาลอย The Toys", name: "ลาลาลอย (The Toys)", answers: ["ลาลาลอย", "100%"] },
+            { query: "หน้าหนาวที่แล้ว The Toys", name: "หน้าหนาวที่แล้ว (The Toys)", answers: ["หน้าหนาวที่แล้ว"] },
+            { query: "จดหมาย The Toys", name: "จดหมาย (The Toys)", answers: ["จดหมาย"] },
+            { query: "จำนน NONT TANONT", name: "จำนน (NONT TANONT)", answers: ["จำนน"] },
+            { query: "รักแรก NONT TANONT", name: "รักแรก (NONT TANONT)", answers: ["รักแรก"] },
+            { query: "ดอกไม้ที่รอฝน The Toys", name: "ดอกไม้ที่รอฝน (The Toys)", answers: ["ดอกไม้ที่รอฝน"] },
+            { query: "ลืมไปแล้วว่าลืมยังไง Jeff Satur", name: "ลืมไปแล้วว่าลืมยังไง (Jeff Satur)", answers: ["ลืมไปแล้วว่าลืมยังไง"] },
+            { query: "แค่เธอ Jeff Satur", name: "แค่เธอ (Jeff Satur)", answers: ["แค่เธอ"] },
+            { query: "ปีใหม่ปีนี้ SARAN", name: "ปีใหม่ปีนี้ (SARAN)", answers: ["ปีใหม่ปีนี้"] },
+            { query: "ขี้หึง Silly Fools", name: "ขี้หึง (Silly Fools)", answers: ["ขี้หึง"] },
+            { query: "9 นาฬิกา SPF", name: "9 นาฬิกา (SPF)", answers: ["9 นาฬิกา", "เก้านาฬิกา"] },
+            { query: "เค้าก่อน UrboyTJ", name: "เค้าก่อน (UrboyTJ)", answers: ["เค้าก่อน"] },
+            { query: "เป็นให้ทุกอย่าง UrboyTJ", name: "เป็นให้ทุกอย่าง (UrboyTJ)", answers: ["เป็นให้ทุกอย่าง"] },
+            { query: "ถามคำ UrboyTJ", name: "ถามคำ (UrboyTJ)", answers: ["ถามคำ"] },
+            { query: "ช่วยไม่ได้ UrboyTJ", name: "ช่วยไม่ได้ (UrboyTJ)", answers: ["ช่วยไม่ได้"] },
+            { query: "ความรักนักบินอวกาศ MaryJane", name: "ความรักนักบินอวกาศ (MaryJane)", answers: ["ความรักนักบินอวกาศ"] },
+            { query: "ฝากดาว NKBOI", name: "ฝากดาว (NKBOI x SAPPHIRE)", answers: ["ฝากดาว"] },
+            { query: "หน้าสุดท้ายของปฏิทิน MAN'R", name: "หน้าสุดท้ายของปฏิทิน (MAN'R X BEARING)", answers: ["หน้าสุดท้ายของปฏิทิน"] },
+            { query: "เมื่อคืนฉันฝันว่า 2T FLOW", name: "เมื่อคืนฉันฝันว่า (2T FLOW x SNOOPO x HANXPOND)", answers: ["เมื่อคืนฉันฝันว่า"] },
+            { query: "ในวันที่ฝนพรำ Liltan", name: "ในวันที่ฝนพรำ (Liltan)", answers: ["ในวันที่ฝนพรำ"] },
+            { query: "แค่คุย P.A.P BEATBAND", name: "แค่คุย (P.A.P BEATBAND)", answers: ["แค่คุย", "เเค่คุย"] },
+            { query: "ฟาวเวอร์ P.A.P BEATBAND", name: "ฟาวเวอร์ (P.A.P BEATBAND)", answers: ["ฟาวเวอร์", "flower", "ดอกไม้"] },
+            { query: "จุ๊บก่อนนอน P.A.P", name: "จุ๊บก่อนนอน (P.A.P BEAT BAND)", answers: ["จุ๊บก่อนนอน"] },
+            { query: "รักเธอหัวทิ่มบ่อ HANGMAN", name: "รักเธอหัวทิ่มบ่อ (HANGMAN)", answers: ["รักเธอหัวทิ่มบ่อ"] },
+            { query: "คนมีเสน่ห์ ป้าง", name: "คนมีเสน่ห์ (ป้าง นครินทร์)", answers: ["คนมีเสน่ห์"] },
+            { query: "วัดปะหล่ะ 4EVE", name: "วัดปะหล่ะ (4EVE)", answers: ["วัดปะหล่ะ", "วัดปะละ"] },
+            { query: "จีบเธอไม่ได้ Trumsey", name: "จีบเธอไม่ได้ (Trumsey)", answers: ["จีบเธอไม่ได้"] },
+            { query: "ฉบับสุดท้าย ZENTYARB", name: "ฉบับสุดท้าย (ZENTYARB)", answers: ["ฉบับสุดท้าย"] },
+            { query: "ความต่าง OG-ANIC", name: "ความต่าง (OG-ANIC)", answers: ["ความต่าง"] },
+            { query: "ไอ้ต้าว SPRITE", name: "ไอ้ต้าว (SPRITE)", answers: ["ไอ้ต้าว"] },
+            { query: "บังอร SPRITE", name: "บังอร (SPRITE)", answers: ["บังอร"] },
+            { query: "นางฟ้าจำแลง ปู่จ๋าน", name: "นางฟ้าจำแลง (ปู่จ๋าน ลองไมค์)", answers: ["นางฟ้าจำแลง"] },
+            { query: "กฏไตรรัก ปู่จ๋าน", name: "กฏไตรรัก (ปู่จ๋าน ลองไมค์)", answers: ["กฏไตรรัก", "กฎไตรรัก"] },
+            { query: "ตราบธุรีดิน ปู่จ๋าน", name: "ตราบธุรีดิน (ปู่จ๋าน ลองไมค์)", answers: ["ตราบธุรีดิน", "ตราบธุลีดิน"] },
+            { query: "โอ้ละน้อ ก้องห้วยไร่", name: "โอ้ละน้อ (ก้อง ห้วยไร่)", answers: ["โอ้ละน้อ", "โอ้ละน้อก้องห้วยไร่"] },
+            { query: "ไสว่าสิบ่ถิ่มกัน ก้องห้วยไร่", name: "ไสว่าสิบ่ถิ่มกัน (ก้อง ห้วยไร่)", answers: ["ไสว่าสิบ่ถิ่มกัน", "ใสว่าสิบ่ถิ่มกัน"] },
+            { query: "ริมหาดทราย Z9", name: "ริมหาดทราย (Z9 X GLAR)", answers: ["ริมหาดทราย"] },
+            { query: "ไทม์แมชชีน ปอน นิพนธ์", name: "ไทม์แมชชีน (ปอน นิพนธ์ x โต๋เหน่อ)", answers: ["ไทม์แมชชีน", "time machine", "ไทมืแมชชีน"] },
+            { query: "มีเพลงจะร้องให้ฟัง โต๋เหน่อ", name: "มีเพลงจะร้องให้ฟัง (โต๋เหน่อ x ปอนนิพนธ์)", answers: ["มีเพลงจะร้องให้ฟัง"] },
+            { query: "ที่ระทึก KAMIKAZE", name: "ที่ระทึก (KAMIKAZE)", answers: ["ที่ระทึก"] },
+            { query: "เตือนแล้วนะ KAMIKAZE", name: "เตือนแล้วนะ (KAMIKAZE)", answers: ["เตือนแล้วนะ"] },
+            { query: "รักติดไซเรน", name: "รักติดไซเรน (My Ambulance)", answers: ["รักติดไซเรน", "my ambulance"] },
+            { query: "ปี้(จน)ป่น เอ มหาหิงค์", name: "ปี้(จน)ป่น (เอ มหาหิงค์)", answers: ["ปี้จนป่น"] },
+            { query: "อยากนอนกับเธอ เด็กเลี้ยงควาย", name: "อยากนอนกับเธอ (เด็กเลี้ยงควาย DLK)", answers: ["อยากนอนกับเธอ"] },
+            { query: "สัญญาเดือนหก โจอี้ ภูวศิษฐ์", name: "สัญญาเดือนหก (โจอี้ ภูวศิษฐ์)", answers: ["สัญญาเดือนหก"] },
+            { query: "น่ารักชิบปุ๋ง Bonnado", name: "น่ารักชิบปุ๋ง (Bonnado)", answers: ["น่ารักชิบปุ๋ง", "น่ารักชิบปุง"] },
+            { query: "จันทร์เจ้า Slot Machine", name: "จันทร์เจ้า (Slot Machine)", answers: ["จันทร์เจ้า"] },
+            { query: "ห้านาทีบรรลุธรรม บิทเติ้ล", name: "ห้านาทีบรรลุธรรม (บิทเติ้ล)", answers: ["ห้านาทีบรรลุธรรม", "5นาทีบรรลุธรรม"] },
+            { query: "วาฬเกยตื้น GUNGUN", name: "วาฬเกยตื้น (GUNGUN)", answers: ["วาฬเกยตื้น"] },
+            { query: "รักควายควาย มิน เฉาก๊วย", name: "รักควายควาย (มิน เฉาก๊วย)", answers: ["รักควายควาย"] }
         ];
 
         // สถานะของเกม
@@ -297,7 +313,7 @@
 
         // Elements
         let screens = {};
-        let playBtn, playIcon, answerInput, submitBtn, skipBtn, statusText;
+        let playBtn, playIcon, answerInput, submitBtn, skipBtn, stopBtn, statusText;
 
         function initApp() {
             screens = {
@@ -312,6 +328,7 @@
             answerInput = document.getElementById('answer-input');
             submitBtn = document.getElementById('submit-btn');
             skipBtn = document.getElementById('skip-btn');
+            stopBtn = document.getElementById('stop-btn');
             statusText = document.getElementById('status-text');
 
             if (document.getElementById('total-start-count')) {
@@ -365,6 +382,10 @@
             answerInput.disabled = true;
             submitBtn.disabled = true;
             skipBtn.disabled = true;
+            if (stopBtn) {
+                stopBtn.classList.add('hidden');
+                stopBtn.classList.remove('flex');
+            }
             statusText.innerText = "กำลังโหลดเพลง...";
             playBtn.disabled = true;
             playIcon.className = "fa-solid fa-spinner fa-spin ml-0 text-gray-400";
@@ -394,7 +415,7 @@
                         screens.loading.classList.add('hidden');
                         screens.loading.classList.remove('flex');
                         
-                        statusText.innerText = "กดเพื่อฟังฮุค (5 วินาที)";
+                        statusText.innerText = "กดเพื่อฟังท่อนฮุค (5 วินาที)";
                         playBtn.disabled = false;
                         playIcon.className = "fa-solid fa-play ml-2 text-tiktok-dark";
                         answerInput.disabled = false;
@@ -405,7 +426,7 @@
                     if (currentAudio.readyState >= 3) {
                         screens.loading.classList.add('hidden');
                         screens.loading.classList.remove('flex');
-                        statusText.innerText = "กดเพื่อฟังฮุค (5 วินาที)";
+                        statusText.innerText = "กดเพื่อฟังท่อนฮุค (5 วินาที)";
                         playBtn.disabled = false;
                         playIcon.className = "fa-solid fa-play ml-2 text-tiktok-dark";
                         answerInput.disabled = false;
@@ -414,16 +435,18 @@
                     }
 
                 } else {
-                    console.error("Audio not found for: ", song.query);
+                    console.log("ไม่พบเพลงใน Apple Music จึงทำการข้ามอัตโนมัติ: ", song.query);
                     // ถ้าหาเพลงไม่เจอ ให้เอาออกจากคิวเลย และลดจำนวนเพลงทั้งหมดลง
                     songs.shift();
                     totalSongs--;
                     loadQuestion();
                 }
             } catch (error) {
-                console.error("API Error: ", error);
-                alert("เกิดข้อผิดพลาดในการโหลดเพลง กรุณาลองใหม่อีกครั้ง");
-                location.reload();
+                console.log("API Error (ข้ามอัตโนมัติ): ", error);
+                // ข้ามข้อที่ Error ไปเลยแทนการรีโหลดหน้าใหม่
+                songs.shift();
+                totalSongs--;
+                loadQuestion();
             }
         }
 
@@ -434,6 +457,11 @@
             statusText.innerText = "ฟังจบแล้ว! พิมพ์คำตอบเลย";
             document.getElementById('timer-text').innerText = "กดปุ่มกลมเพื่อฟังซ้ำ";
             
+            if (stopBtn) {
+                stopBtn.classList.add('hidden');
+                stopBtn.classList.remove('flex');
+            }
+
             if (!playFull) {
                 document.getElementById('hint-btn').classList.remove('hidden');
             }
@@ -447,6 +475,11 @@
             playIcon.className = "fa-solid fa-headphones ml-0";
             statusText.innerText = "🎵 กำลังเล่น...";
             
+            if (stopBtn) {
+                stopBtn.classList.remove('hidden');
+                stopBtn.classList.add('flex');
+            }
+            
             // เริ่มฟัง 5 วินาที -> ให้ข้ามไปเริ่มที่วินาทีที่ 10 เพื่อเข้าท่อนฮุค
             // ฟังเต็ม 60 วินาที -> เริ่มตั้งแต่วินาทีที่ 0
             currentAudio.currentTime = playFull ? 0 : 10; 
@@ -454,7 +487,7 @@
             answerInput.focus();
 
             const duration = playFull ? 60000 : 5000;
-            document.getElementById('timer-text').innerText = playFull ? "กำลังฟังตัวเต็ม (60 วินาที)" : "กำลังฟังฮุค (5 วินาที)";
+            document.getElementById('timer-text').innerText = playFull ? "กำลังฟังตัวเต็ม (60 วินาที)" : "กำลังฟังท่อนฮุคฮุค (5 วินาที)";
 
             // จัดการกรณีเพลงจบก่อนเวลา
             currentAudio.onended = () => {
@@ -467,6 +500,17 @@
                 currentAudio.pause();
                 stopPlayingState(playFull);
             }, duration);
+        }
+
+        function stopAudioBtn() {
+            if (currentAudio && isPlaying) {
+                currentAudio.pause();
+                if (playTimeout) clearTimeout(playTimeout);
+                
+                // หยุดกลางคัน ส่ง false ไปเพื่อให้แสดงปุ่มคำใบ้
+                stopPlayingState(false);
+                statusText.innerText = "หยุดเพลงแล้ว";
+            }
         }
 
         function sanitizeText(text) {
@@ -485,6 +529,11 @@
             if (playTimeout) clearTimeout(playTimeout);
             isPlaying = false;
             playBtn.classList.remove('playing-animation');
+            
+            if (stopBtn) {
+                stopBtn.classList.add('hidden');
+                stopBtn.classList.remove('flex');
+            }
 
             const userAnswer = sanitizeText(userAnswerRaw);
             const currentSong = songs[0];
@@ -569,6 +618,11 @@
             if (playTimeout) clearTimeout(playTimeout);
             isPlaying = false;
             playBtn.classList.remove('playing-animation');
+            
+            if (stopBtn) {
+                stopBtn.classList.add('hidden');
+                stopBtn.classList.remove('flex');
+            }
 
             // นำเพลงปัจจุบันไปต่อท้ายคิว
             const skippedSong = songs.shift();
@@ -589,10 +643,10 @@
             const msg = document.getElementById('final-message');
             const percent = score / totalSongs;
             
-            if(percent === 1) msg.innerText = "เก่งจังว่ะ แฟนพันธุ์แท้!";
-            else if(percent >= 0.75) msg.innerText = "ก็เก่งอยู่ ร้องเพลงบ่อยล่ะสิ";
+            if(percent === 1) msg.innerText = "เก่งจังว่ะ";
+            else if(percent >= 0.75) msg.innerText = "ก็เก่งอยู่ ฟะงเพลงบ่อยละสิ";
             else if(percent >= 0.4) msg.innerText = "เฉยๆ ไม่ค่อยเก่งเท่าไหร่";
-            else msg.innerText = "กากเกิน ไปฝึกฟังเพลงมาใหม่นะ";
+            else msg.innerText = "กากเกิน ไปฟังเพลงเยอะๆน่ะจ๊ะ";
         }
     </script>
 </body>
