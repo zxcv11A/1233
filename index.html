@@ -201,7 +201,7 @@
         <div class="glass-panel p-8 rounded-3xl space-y-2">
             <p class="text-gray-400">คะแนนของคุณ</p>
             <p class="text-6xl font-bold text-white"><span id="final-score">0</span><span id="final-total" class="text-2xl text-gray-500">/20</span></p>
-            <p class="text-tiktok-cyan pt-4 font-medium" id="final-message">เก่งเเนาะ</p>
+            <p class="text-tiktok-cyan pt-4 font-medium" id="final-message">เก่งเนาะ</p>
         </div>
 
         <div class="space-y-4">
@@ -220,7 +220,7 @@
             { query: "ผู้ถูกเลือกให้ผิดหวัง เรนิษรา", name: "ผู้ถูกเลือกให้ผิดหวัง (เรนิษรา)", answers: ["ผู้ถูกเลือกให้ผิดหวัง", "sad tur day"] },
             { query: "ดีใจที่ได้พบเธอ liltan", name: "ดีใจที่ได้พบเธอ (liltan)", answers: ["ดีใจที่ได้พบเธอ"] },
             { query: "พัทยา MEYOU", name: "พัทยา (MEYOU)", answers: ["พัทยา", "pattaya"] },
-            { query: "ซอยข่อยแน แจ๋ม", name: "ซอยข่อยแน (แจ๋ม พลอยไพลิน)", answers: ["ซอยข่อยแน"] },
+            { query: "ซอยข่อยแน YONIA", name: "ซอยข่อยแน (YONIA)", answers: ["ซอยข่อยแน"] },
             { query: "สมดุลรัก SEA.", name: "สมดุลรัก (SEA.)", answers: ["สมดุลรัก"] },
             { query: "ใจฉันตามเธอไป YOUNGOHM", name: "ใจฉันตามเธอไป (YOUNGOHM)", answers: ["ใจฉันตามเธอไป"] },
             { query: "คนสวย BETAYOURBITCH", name: "คนสวย (BETAYOURBITCH)", answers: ["คนสวย"] },
@@ -487,7 +487,7 @@
             answerInput.focus();
 
             const duration = playFull ? 60000 : 5000;
-            document.getElementById('timer-text').innerText = playFull ? "กำลังฟังตัวเต็ม (60 วินาที)" : "กำลังฟังท่อนฮุคฮุค (5 วินาที)";
+            document.getElementById('timer-text').innerText = playFull ? "กำลังฟังตัวเต็ม (60 วินาที)" : "กำลังฟังท่อนฮุค (5 วินาที)";
 
             // จัดการกรณีเพลงจบก่อนเวลา
             currentAudio.onended = () => {
@@ -643,10 +643,10 @@
             const msg = document.getElementById('final-message');
             const percent = score / totalSongs;
             
-            if(percent === 1) msg.innerText = "เก่งจังว่ะ";
-            else if(percent >= 0.75) msg.innerText = "ก็เก่งอยู่ ฟะงเพลงบ่อยละสิ";
+            if(percent === 1) msg.innerText = "เก่งจังว่ะ ";
+            else if(percent >= 0.75) msg.innerText = "ก็เก่งอยู่ ฟังบ่อยละสิ";
             else if(percent >= 0.4) msg.innerText = "เฉยๆ ไม่ค่อยเก่งเท่าไหร่";
-            else msg.innerText = "กากเกิน ไปฟังเพลงเยอะๆน่ะจ๊ะ";
+            else msg.innerText = "กากเกิน ไปฟังเพลงเยอะๆ น่ะจ๊ะ";
         }
     </script>
 </body>
