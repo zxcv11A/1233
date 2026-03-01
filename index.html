@@ -89,7 +89,7 @@
             </div>
             <div class="flex items-center justify-between text-sm text-gray-300">
                 <span><i class="fa-solid fa-stopwatch mr-2 text-tiktok-pink"></i> เวลาฟัง</span>
-                <span class="font-bold text-white">5 วินาที/รอบ</span>
+                <span class="font-bold text-white">5 วินาที (ขอฟังเต็มได้)</span>
             </div>
         </div>
 
@@ -123,11 +123,17 @@
 
             <h2 class="text-2xl font-bold" id="status-text">พร้อมฟังหรือยัง?</h2>
             
-            <button id="play-btn" onclick="playAudio()" class="w-32 h-32 rounded-full bg-white text-tiktok-dark text-4xl shadow-[0_0_30px_rgba(255,255,255,0.3)] hover:scale-110 transition-transform mx-auto flex items-center justify-center relative z-10">
+            <button id="play-btn" onclick="playAudio(false)" class="w-32 h-32 rounded-full bg-white text-tiktok-dark text-4xl shadow-[0_0_30px_rgba(255,255,255,0.3)] hover:scale-110 transition-transform mx-auto flex items-center justify-center relative z-10">
                 <i class="fa-solid fa-play ml-2" id="play-icon"></i>
             </button>
             
-            <p class="text-sm text-gray-400" id="timer-text">กดปุ่มเพื่อฟัง (5 วินาที)</p>
+            <div class="space-y-2 relative z-10">
+                <p class="text-sm text-gray-400" id="timer-text">กดปุ่มกลมเพื่อฟัง (5 วินาที)</p>
+                <!-- ปุ่มขอฟังเต็มเพลง (30 วิ) -->
+                <button id="hint-btn" onclick="playAudio(true)" class="text-sm text-tiktok-pink underline hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed hidden">
+                    <i class="fa-solid fa-unlock mr-1"></i> นึกไม่ออก? ขอฟังตัวเต็ม (30 วิ)
+                </button>
+            </div>
         </div>
 
         <!-- Input Area -->
@@ -156,9 +162,17 @@
 
             <h2 class="text-3xl font-bold" id="result-title">ถูกต้อง!</h2>
             
-            <div class="space-y-2">
-                <p class="text-gray-400 text-sm">เฉลย</p>
-                <p class="text-xl font-bold text-tiktok-cyan" id="actual-song-name">ชื่อเพลง</p>
+            <div class="space-y-4 w-full text-left">
+                <!-- กล่องแสดงคำตอบของผู้เล่น -->
+                <div class="bg-white/10 p-4 rounded-xl border border-white/20">
+                    <p class="text-gray-400 text-xs mb-1"><i class="fa-solid fa-keyboard mr-1"></i> คำตอบของคุณ</p>
+                    <p class="text-lg font-medium text-white break-words" id="user-answered-text">-</p>
+                </div>
+                <!-- กล่องแสดงเฉลย -->
+                <div class="bg-tiktok-dark/50 p-4 rounded-xl border border-tiktok-cyan/30 shadow-[0_0_15px_rgba(0,242,254,0.1)]">
+                    <p class="text-gray-400 text-xs mb-1"><i class="fa-solid fa-music mr-1"></i> เฉลยที่ถูกต้อง</p>
+                    <p class="text-xl font-bold text-tiktok-cyan break-words" id="actual-song-name">ชื่อเพลง</p>
+                </div>
             </div>
 
             <button onclick="nextQuestion()" class="tiktok-btn w-full py-3 rounded-full font-bold mt-4">
@@ -186,13 +200,16 @@
     </div>
 
     <script>
-        // ฐานข้อมูลเพลงฮิต (ใช้ Query สำหรับดึง API จาก iTunes)
+        // ใส่ URL ของ Google Apps Script ที่ได้จากขั้นตอนด้านล่างตรงนี้
+        const GOOGLE_SHEET_URL = "https://script.google.com/macros/s/AKfycbxTcRcUBPg5UOqxdZg7dG81SNo-KvyV2DwiKHetCjM5RqRdTwKn-b66ymukr_KKcMHT8A/exec";
+
+        // ฐานข้อมูลเพลงฮิต (อัปเดตใหม่ เอาเพลงเก่าออก เพิ่ม Day One, ซ่อนไม่หา, Hit Me Up แทน)
         const songDatabase = [
             { query: "ทรงอย่างแบด Paper Planes", name: "ทรงอย่างแบด (Bad Boy)", answers: ["ทรงอย่างแบด", "bad boy", "ทรงอย่างแบด bad boy"] },
             { query: "เลือดกรุ๊ปบี Chrrissa", name: "เลือดกรุ๊ปบี", answers: ["เลือดกรุ๊ปบี", "เลือดกรุ๊ป b", "b blood type"] },
             { query: "โต๊ะริม NONT TANONT", name: "โต๊ะริม (Melt)", answers: ["โต๊ะริม", "melt"] },
-            { query: "นะหน้าทอง โจอี้", name: "นะหน้าทอง", answers: ["นะหน้าทอง"] },
-            { query: "สแตนด์บายหล่อ", name: "สแตนด์บายหล่อ", answers: ["สแตนด์บายหล่อ"] },
+            { query: "DAY ONE PUN", name: "DAY ONE", answers: ["day one", "เดย์วัน", "dayone"] },
+            { query: "ซ่อนไม่หา Jeff Satur", name: "ซ่อน(ไม่)หา (Ghost)", answers: ["ซ่อนไม่หา", "ghost", "ซ่อนหา"] },
             { query: "พี่ชอบหนูที่สุดเลย PONCHET", name: "พี่ชอบหนูที่สุดเลย", answers: ["พี่ชอบหนูที่สุดเลย", "i like you the most"] },
             { query: "ฉลามชอบงับคุณ", name: "ฉลามชอบงับคุณ", answers: ["ฉลามชอบงับคุณ", "ฉลาม"] },
             { query: "ทักครับ Lipta", name: "ทักครับ", answers: ["ทักครับ"] },
@@ -206,7 +223,7 @@
             { query: "ดาวหางฮัลเลย์ fellow fellow", name: "ดาวหางฮัลเลย์", answers: ["ดาวหางฮัลเลย์", "halleys comet", "ดาวหางฮัลเลย์ halleys comet"] },
             { query: "ผู้ถูกเลือกให้สมหวัง เรนิษรา", name: "ผู้ถูกเลือกให้สมหวัง (Sad tur day)", answers: ["ผู้ถูกเลือกให้สมหวัง", "sad tur day"] },
             { query: "ฟ้ารักพ่อ Badmixy", name: "ฟ้ารักพ่อ (DILF)", answers: ["ฟ้ารักพ่อ", "dilf"] },
-            { query: "มองนานๆ FLIP", name: "มองนานๆ", answers: ["มองนานๆ", "มองนานๆคนสวยต้องมองนานๆ"] },
+            { query: "Hit Me Up Timethai", name: "Hit Me Up", answers: ["hit me up", "ฮิตมีอัป"] },
             { query: "วาสนาผู้ใด Parkmalody", name: "วาสนาผู้ใด", answers: ["วาสนาผู้ใด", "วาสนาผู้ใดหนอ"] }
         ];
 
@@ -219,18 +236,40 @@
         let songs = []; // เพลงที่สุ่มแล้วจะมาเก็บในนี้
 
         // Elements
-        const screens = {
-            start: document.getElementById('start-screen'),
-            game: document.getElementById('game-screen'),
-            end: document.getElementById('end-screen'),
-            loading: document.getElementById('loading-overlay'),
-            result: document.getElementById('result-overlay')
-        };
-        const playBtn = document.getElementById('play-btn');
-        const playIcon = document.getElementById('play-icon');
-        const answerInput = document.getElementById('answer-input');
-        const submitBtn = document.getElementById('submit-btn');
-        const statusText = document.getElementById('status-text');
+        let screens = {};
+        let playBtn, playIcon, answerInput, submitBtn, statusText;
+
+        // ฟังก์ชันเพื่อเริ่มต้นโหลดโครงสร้าง Elements (หลีกเลี่ยง Error เรนเดอร์ไม่ทัน)
+        function initApp() {
+            screens = {
+                start: document.getElementById('start-screen'),
+                game: document.getElementById('game-screen'),
+                end: document.getElementById('end-screen'),
+                loading: document.getElementById('loading-overlay'),
+                result: document.getElementById('result-overlay')
+            };
+            playBtn = document.getElementById('play-btn');
+            playIcon = document.getElementById('play-icon');
+            answerInput = document.getElementById('answer-input');
+            submitBtn = document.getElementById('submit-btn');
+            statusText = document.getElementById('status-text');
+
+            // กด Enter เพื่อตอบ
+            if (answerInput) {
+                answerInput.addEventListener('keypress', function (e) {
+                    if (e.key === 'Enter' && !submitBtn.disabled) {
+                        checkAnswer();
+                    }
+                });
+            }
+        }
+
+        // ตรวจสอบว่าเว็บโหลด DOM เสร็จสมบูรณ์แล้วหรือยัง ก่อนผูก Event
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initApp);
+        } else {
+            initApp();
+        }
 
         // ฟังก์ชันสลับ Array (เพื่อสุ่มลำดับข้อ)
         function shuffleArray(array) {
@@ -268,6 +307,10 @@
             playBtn.disabled = true;
             playIcon.className = "fa-solid fa-spinner fa-spin ml-0 text-gray-400";
             document.getElementById('question-counter').innerText = `${currentQuestionIndex + 1}/${songs.length}`;
+            
+            // ซ่อนปุ่มฟังเต็ม จนกว่าจะฟังรอบ 5 วิ เสร็จ
+            document.getElementById('hint-btn').classList.add('hidden');
+            document.getElementById('timer-text').innerText = "กดปุ่มกลมเพื่อฟัง (5 วินาที)";
 
             screens.loading.classList.remove('hidden');
             screens.loading.classList.add('flex');
@@ -324,8 +367,8 @@
             }
         }
 
-        // เล่นเสียงแค่ 5 วินาที
-        function playAudio() {
+        // เล่นเสียง (รองรับการฟังแบบ 5 วิ และ 30 วิ)
+        function playAudio(playFull = false) {
             if (!currentAudio || isPlaying) return;
 
             isPlaying = true;
@@ -333,19 +376,28 @@
             playIcon.className = "fa-solid fa-headphones ml-0";
             statusText.innerText = "🎵 กำลังเล่น...";
             
-            // เริ่มเล่น (ขยับไปวินาทีที่ 10 ของ preview ให้เข้าท่อนฮุค)
-            currentAudio.currentTime = 5; 
+            // เริ่มเล่น (ถ้าฟังตัวเต็มเริ่มจากวินาทีที่ 0, ถ้าคำใบ้เริ่มวินาทีที่ 5 ให้เข้าท่อนฮุค)
+            currentAudio.currentTime = playFull ? 0 : 5; 
             currentAudio.play();
             answerInput.focus();
 
-            // หยุดเมื่อครบ 5 วินาที
+            const duration = playFull ? 30000 : 5000;
+            document.getElementById('timer-text').innerText = playFull ? "กำลังฟังตัวเต็ม (30 วินาที)" : "กำลังฟังคำใบ้ (5 วินาที)";
+
+            // หยุดเมื่อครบเวลา
             playTimeout = setTimeout(() => {
                 currentAudio.pause();
                 isPlaying = false;
                 playBtn.classList.remove('playing-animation');
                 playIcon.className = "fa-solid fa-rotate-right ml-0 text-tiktok-dark";
                 statusText.innerText = "ฟังจบแล้ว! พิมพ์คำตอบเลย";
-            }, 5000);
+                document.getElementById('timer-text').innerText = "กดปุ่มกลมเพื่อฟังซ้ำ";
+                
+                // หลังจากฟังรอบ 5 วิ จบแล้ว ให้แสดงปุ่มขอฟังตัวเต็มเผื่อจำไม่ได้
+                if (!playFull) {
+                    document.getElementById('hint-btn').classList.remove('hidden');
+                }
+            }, duration);
         }
 
         // ทำความสะอาด string เพื่อตรวจคำตอบ
@@ -357,7 +409,7 @@
         // ตรวจคำตอบ
         function checkAnswer() {
             const userAnswerRaw = answerInput.value.trim();
-            if(!userAnswerRaw) return;
+            if(!userAnswerRaw) return; // ไม่ให้ตอบถ้าช่องว่างเปล่า
 
             // หยุดเสียงถ้ายังเล่นอยู่
             if (currentAudio) currentAudio.pause();
@@ -371,16 +423,40 @@
             // ตรวจว่าคำตอบตรงกับที่ตั้งไว้หรือไม่
             const isCorrect = currentSong.answers.some(ans => sanitizeText(ans) === userAnswer);
 
-            showResult(isCorrect, currentSong.name);
+            // ส่งข้อมูลคำตอบของผู้ใช้ไปแสดงในหน้า Result ด้วย
+            showResult(isCorrect, currentSong.name, userAnswerRaw);
+
+            // ส่งข้อมูลไปบันทึกที่ Google Sheet (ทำงานเบื้องหลัง)
+            sendToGoogleSheet(currentSong.name, userAnswerRaw, isCorrect);
         }
 
-        // แสดงหน้าต่างเฉลย
-        function showResult(isCorrect, actualName) {
+        // ฟังก์ชันส่งข้อมูลไป Google Sheet
+        function sendToGoogleSheet(songName, userAnswer, isCorrect) {
+            if (!GOOGLE_SHEET_URL || GOOGLE_SHEET_URL.includes("ใส่_URL_ที่ได้จาก_Apps_Script_ตรงนี้")) return;
+
+            fetch(GOOGLE_SHEET_URL, {
+                method: 'POST',
+                mode: 'no-cors', // ป้องกันปัญหา CORS ตอนยิงข้ามโดเมน
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    question: songName,
+                    userAnswer: userAnswer,
+                    result: isCorrect ? "✅ ถูกต้อง" : "❌ ผิด"
+                })
+            }).catch(error => console.error('Error sending to Google Sheet:', error));
+        }
+
+        // แสดงหน้าต่างเฉลย พร้อมโชว์คำตอบของผู้เล่น
+        function showResult(isCorrect, actualName, userAnswerRaw) {
             const overlay = screens.result;
             const card = document.getElementById('result-card');
             const iconContainer = document.getElementById('result-icon-container');
             const title = document.getElementById('result-title');
             
+            // เอาคำตอบที่ผู้เล่นพิมพ์มาโชว์เทียบกับเฉลย
+            document.getElementById('user-answered-text').innerText = userAnswerRaw || "-";
             document.getElementById('actual-song-name').innerText = actualName;
 
             overlay.classList.remove('hidden');
@@ -435,14 +511,6 @@
             else if(score >= 8) msg.innerText = "พอใช้ได้ ไถฟีดบ่อยเหมือนกันนะเรา 👍";
             else msg.innerText = "สงสัยต้องเล่น TikTok ให้เยอะกว่านี้นะ! 😅";
         }
-
-        // กด Enter เพื่อตอบ
-        answerInput.addEventListener('keypress', function (e) {
-            if (e.key === 'Enter' && !submitBtn.disabled) {
-                checkAnswer();
-            }
-        });
-
     </script>
 </body>
 </html>
